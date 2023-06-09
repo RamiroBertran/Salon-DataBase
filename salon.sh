@@ -1,5 +1,8 @@
 #!/bin/bash
 PSQL="psql -X --username=kvothe_snow --dbname=salon --tuples-only --no-align -c"
+TRUNCATE="$($PSQL "TRUNCATE customers, appointments;")"
+RESTART_CUSTOMERS_TABLE_SEQ="$($PSQL "ALTER SEQUENCE customers_customer_id_seq RESTART WITH 1;")"
+RESTART_APPOINTMENTS_TABLE_SEQ="$($PSQL "ALTER SEQUENCE appointments_appointment_id_seq RESTART WITH 1;")"
 echo -e "\n~~~~~ MY SALON ~~~~~\n"
 echo -e "\nWelcome to My Salon, how can I help you?"
 MAIN_MENU() {
@@ -22,46 +25,44 @@ esac
 
 }
 
-ASK_PHONE="$(echo -e "\nWhat's your phone number?\n")"
+SET_NEW_CLIENT_IF() {
+echo -e "\nWhat's your phone number?"
+read PHONE_NUMBER
+CLIENT_IS_IN_DATABASE="$($PSQL "SELECT phone FROM appointments WHERE phone='$PHONE_NUMBER'")"
+if [[ -z  $CLIENT_IS_IN_DATABASE ]]
+then 
+  #Ask for name
+  echo -e "\nWhat's your name?"
+  read NAME
+  # Set new client to customers
+  INSERT_NAME_RESULT="$($PSQL "INSERT INTO customers(name) VALUES('$NAME')")"
+  #Get customer ID
+  CUSTOMER_ID="$($PSQL "SELECT customer_id FROM customers WHERE name='$NAME'")"
+  # Set customer_id, service_id, and name to appoitments
+  INSERT_APPOINTMENT_RESULT="$($PSQL "INSERT INTO appointments(customer_id, service_id, phone, time) VALUES($CUSTOMER_ID, $MENU_OPTION, '$PHONE', null)")"
+  echo "$($PSQL "SELECT * FROM appointments")"
+  # send to main menu
+  MAIN_MENU "You can get your appointement now!"
+else 
+ echo -e "\nWhat time would you like to take your appointment?" 
+ read TIME
+fi
+}
 
 CUT() {
-	#ask for phone number
-	echo $ASK_PHONE
-	read PHONE_NUMBER
-	PHONE="$($PSQL "SELECT phone FROM appointments WHERE phone='$PHONE_NUMBER'")"
-	if [[ -z $PHONE ]]
-	then 
-		# insert phone number 
-		echo "$($PSQL "INSERT INTO appointments(customer_id, service_id, phone, time) VALUES(null, null, '$PHONE_NUMBER', null)")"
-		APM_PHONE="$($PSQL "SELECT * FROM appointments")"
-		echo $APM_PHONE
-		echo -e "\nI don't have a record for that phone number, what's your name?"
-		read NAME
-		# insert client to database && phone result
-		INSERT_NAME_RESULT="$($PSQL "INSERT INTO customers(name) VALUES('$NAME')")"
-		#send to main menu
-		MAIN_MENU
-	else
-		echo -e "What time would you like your cut?"
-		# set time to salon option 
-		SET_SERVICE_TIME="$($PSQL "INSERT INTO appointments() WHERE phone='$PHONE_NUMBER'")"
-	fi
+  SET_NEW_CLIENT_IF
 }
 COLOR() {
-	echo $ASK_PHONE
-	read PHONE_NUMBER
+  SET_NEW_CLIENT_IF
 }
 PERM() {
-	echo $ASK_PHONE
-	read PHONE_NUMBER
+  SET_NEW_CLIENT_IF
 }
 STYLE() {
-	echo $ASK_PHONE
-	read PHONE_NUMBER
+  SET_NEW_CLIENT_IF
 }
 TRIM() {
-	echo $ASK_PHONE
-	read PHONE_NUMBER
+  SET_NEW_CLIENT_IF
 }
 
 EXIT() {
