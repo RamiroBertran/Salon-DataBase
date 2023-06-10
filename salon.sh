@@ -64,6 +64,7 @@ SET_TIME_TO_APPOINTMENT() {
   fi
     # if time is not empty, and it is equal to either option, then set the time in the appointment table
     SET_TIME="$($PSQL "UPDATE appointments SET time='$TIME' WHERE customer_id=$CUSTOMER_ID")"
+    echo -e "\nI have put you down for a $SERVICE_TYPE at $TIME, $NAME"
 }
 
 CUT() {
