@@ -24,8 +24,19 @@ esac
 }
 
 SET_NEW_CLIENT_IF() {
+if [[ $1 ]]
+then
+  echo -e "\n$1"
+fi
 echo -e "\nWhat's your phone number?"
 read PHONE_NUMBER
+if [[ -z $PHONE_NUMBER ]]
+then 
+SET_NEW_CLIENT_IF "You've not enter anything. Try again."
+elif [[ ! "$PHONE_NUMBER" =~ ^[0-9]{3}-[0-9]{3}-[0-9]{3}$ ]]
+then
+SET_NEW_CLIENT_IF "The number format is 'xxx-xxx-xxx'" 
+fi
 CLIENT_IS_IN_DATABASE="$($PSQL "SELECT phone FROM appointments WHERE phone='$PHONE_NUMBER'")"
 if [[ -z  $CLIENT_IS_IN_DATABASE ]]
 then 
@@ -63,8 +74,8 @@ SET_TIME_TO_APPOINTMENT() {
     SET_TIME_TO_APPOINTMENT  "The time format is xx:xx or xxam or xxpm"
   fi
     # if time is not empty, and it is equal to either option, then set the time in the appointment table
-    SET_TIME="$($PSQL "UPDATE appointments SET time='$TIME' WHERE customer_id=$CUSTOMER_ID")"
-    echo -e "\nI have put you down for a $SERVICE_TYPE at $TIME, $NAME"
+   SET_TIME="$($PSQL "UPDATE appointments SET time='$TIME' WHERE customer_id=$CUSTOMER_ID")"
+   echo -e "\nI have put you down for a $SERVICE_TYPE at $TIME, $NAME"
 }
 
 CUT() {
