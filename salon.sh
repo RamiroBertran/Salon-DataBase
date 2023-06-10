@@ -1,8 +1,8 @@
 #!/bin/bash
 PSQL="psql -X --username=kvothe_snow --dbname=salon --tuples-only --no-align -c"
-TRUNCATE="$($PSQL "TRUNCATE customers, appointments;")"
-RESTART_CUSTOMERS_TABLE_SEQ="$($PSQL "ALTER SEQUENCE customers_customer_id_seq RESTART WITH 1;")"
-RESTART_APPOINTMENTS_TABLE_SEQ="$($PSQL "ALTER SEQUENCE appointments_appointment_id_seq RESTART WITH 1;")"
+#TRUNCATE="$($PSQL "TRUNCATE customers, appointments;")"
+#RESTART_CUSTOMERS_TABLE_SEQ="$($PSQL "ALTER SEQUENCE customers_customer_id_seq RESTART WITH 1;")"
+#RESTART_APPOINTMENTS_TABLE_SEQ="$($PSQL "ALTER SEQUENCE appointments_appointment_id_seq RESTART WITH 1;")"
 echo -e "\n~~~~~ MY SALON ~~~~~\n"
 echo -e "\nWelcome to My Salon, how can I help you?"
 MAIN_MENU() {
