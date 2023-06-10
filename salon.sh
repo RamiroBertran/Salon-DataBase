@@ -21,8 +21,6 @@ case $MENU_OPTION in
 	6) EXIT ;;
 	*) MAIN_MENU "I could not find that service. What would you like today?" ;;
 esac
-
-
 }
 
 SET_NEW_CLIENT_IF() {
@@ -53,23 +51,17 @@ SET_TIME_TO_APPOINTMENT() {
   then 
     echo -e "\n$1"
   fi
-  echo -e "\nWhat time would you like to take your appointment, $NAME?" 
+  #Get service 
+  SERVICE_TYPE="$($PSQL "SELECT name FROM services WHERE service_id=$MENU_OPTION")"
+  echo -e "\nWhat time would you like to take your $SERVICE_TYPE, $NAME?" 
   read TIME
-  if [[ -z $TIME ]]
-  then 
-    SET_TIME_TO_APPOINTMENT "You've not enter any appointment time. Try again."
+  if [[ -z $TIME ]] 
+  then
+    SET_TIME_TO_APPOINTMENT "You've not enter anything. Try again."
+  elif [[ ! $TIME =~ (^[0-9]{2}:[0-9]{2}$|^[0-9]{2}(am|pm)$) ]]  # si lo pongo mal es verdadero si lo pongo bien es falso 
+  then
+    SET_TIME_TO_APPOINTMENT  "The time format is xx:xx or xxam or xxpm"
   fi
-  if [[ ! "$TIME" =~ ^[0-9]{2}:[0-9]{2}$ ]] # if time is not equal then 
-    then
-    echo $?
-    SET_TIME_TO_APPOINTMENT "Remember the valid format are '10:30' or 11am"
-    elif [[ ! "$TIME" =~ ^[0-9]{2}(am|pm)$ ]] # if time is not equal then
-    then
-    echo $?
-    SET_TIME_TO_APPOINTMENT "Remember the valid format are '10:30' or 11am"
-    else 
-    echo You made good
-  fi  
     # if time is not empty, and it is equal to either option, then set the time in the appointment table
     SET_TIME="$($PSQL "UPDATE appointments SET time='$TIME' WHERE customer_id=$CUSTOMER_ID")"
 }
