@@ -10,7 +10,7 @@ MAIN_MENU() {
 	then 
 		echo -e "\n$1"
 	fi
-echo -e "\n1) cut\n2) color\n3) perm\n4) style\n5) trim"
+echo -e "\n1) cut\n2) color\n3) perm\n4) style\n5) trim\n6) exit"
 read MENU_OPTION
 case $MENU_OPTION in 
 	1) CUT ;;
@@ -51,7 +51,7 @@ then
   # set time to appointmetn
   SET_TIME_TO_APPOINTMENT
 else 
-  #set time to appointment
+  UPDATE_SERVICE_ID="$($PSQL "UPDATE appointments SET service_id=$MENU_OPTION WHERE phone='$PHONE_NUMBER'")"
   SET_TIME_TO_APPOINTMENT
 fi
 }
@@ -71,13 +71,14 @@ SET_TIME_TO_APPOINTMENT() {
   read TIME
   if [[ -z $TIME ]] 
   then
+
     SET_TIME_TO_APPOINTMENT "You've not enter anything. Try again."
-  elif [[ ! $TIME =~ (^[0-9]{2}:[0-9]{2}$|^[0-9]{2}(am|pm)$) ]]  # si lo pongo mal es verdadero si lo pongo bien es falso 
+  elif [[ ! $TIME =~ (^[0-9]{2}:[0-9]{2}$|^[0-9]{1,2}(am|pm)$) ]]  # si lo pongo mal es verdadero si lo pongo bien es falso 
   then
     SET_TIME_TO_APPOINTMENT  "The time format is xx:xx or xxam or xxpm"
   fi
     # if time is not empty, and it is equal to either option, then set the time in the appointment table
-   SET_TIME="$($PSQL "UPDATE appointments SET time='$TIME' WHERE customer_id=$CUSTOMER_ID")"
+   SET_TIME="$($PSQL "UPDATE appointments SET time='$TIME' WHERE service_id=$MENU_OPTION")"
    echo -e "\nI have put you down for a $SERVICE_TYPE at $TIME, $USER_NAME"
 }
 
