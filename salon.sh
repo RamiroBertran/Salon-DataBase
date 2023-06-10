@@ -35,19 +35,18 @@ then
 SET_NEW_CLIENT_IF "You've not enter anything. Try again."
 elif [[ ! "$PHONE_NUMBER" =~ ^[0-9]{3}-[0-9]{3}-[0-9]{3}$ ]]
 then
-SET_NEW_CLIENT_IF "The number format is 'xxx-xxx-xxx'" 
+SET_NEW_CLIENT_IF "The number format has to be 'xxx-xxx-xxx'" 
 fi
 CLIENT_IS_IN_DATABASE="$($PSQL "SELECT phone FROM appointments WHERE phone='$PHONE_NUMBER'")"
 if [[ -z  $CLIENT_IS_IN_DATABASE ]]
 then 
-  #Ask for name
   echo -e "\nI don't have a record for that phone number, what's your name?"
   read NAME
   # Set new client to customers
   INSERT_NAME_RESULT="$($PSQL "INSERT INTO customers(name) VALUES('$NAME')")"
   #Get customer ID
   CUSTOMER_ID="$($PSQL "SELECT customer_id FROM customers WHERE name='$NAME'")"
-  # Set customer_id, service_id, and name to appoitments
+  # Set customer_id, service_id, and phone to appoitments
   INSERT_APPOINTMENT_RESULT="$($PSQL "INSERT INTO appointments(customer_id, service_id, phone, time) VALUES($CUSTOMER_ID, $MENU_OPTION, '$PHONE_NUMBER', null)")"
   # set time to appointmetn
   SET_TIME_TO_APPOINTMENT
@@ -64,7 +63,11 @@ SET_TIME_TO_APPOINTMENT() {
   fi
   #Get service 
   SERVICE_TYPE="$($PSQL "SELECT name FROM services WHERE service_id=$MENU_OPTION")"
-  echo -e "\nWhat time would you like to take your $SERVICE_TYPE, $NAME?" 
+  #Get customer_id
+  CUSTOMER_ID="$($PSQL "SELECT customer_id FROM appointments WHERE phone='$PHONE_NUMBER'")"
+  #Set customer name into a variable
+  USER_NAME="$($PSQL "SELECT name FROM customers WHERE customer_id=$CUSTOMER_ID")"
+  echo -e "\nWhat time would you like to take your $SERVICE_TYPE, $USER_NAME?" 
   read TIME
   if [[ -z $TIME ]] 
   then
@@ -75,7 +78,7 @@ SET_TIME_TO_APPOINTMENT() {
   fi
     # if time is not empty, and it is equal to either option, then set the time in the appointment table
    SET_TIME="$($PSQL "UPDATE appointments SET time='$TIME' WHERE customer_id=$CUSTOMER_ID")"
-   echo -e "\nI have put you down for a $SERVICE_TYPE at $TIME, $NAME"
+   echo -e "\nI have put you down for a $SERVICE_TYPE at $TIME, $USER_NAME"
 }
 
 CUT() {
